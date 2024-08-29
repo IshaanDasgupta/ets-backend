@@ -81,6 +81,7 @@ io.on("connection", (socket) => {
 
     socket.on("register", (mongo_id) => {
         socket_id_to_mongo_id[socket.id] = mongo_id;
+        console.log("registerd users : ", socket_id_to_mongo_id);
     });
 
     socket.on("update_location", (location_info) => {
@@ -139,6 +140,10 @@ io.on("connection", (socket) => {
         if (users.length === 1) {
             io.to(socket.id).emit("request_response", "no users nearby");
         } else {
+            console.log("help data :", {
+                user: socket_id_to_mongo_id[socket.id],
+                ...help_info,
+            });
             let help = Help({
                 user: socket_id_to_mongo_id[socket.id],
                 ...help_info,
