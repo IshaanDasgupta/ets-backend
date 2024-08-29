@@ -159,7 +159,9 @@ io.on("connection", (socket) => {
                     sender: socket.id,
                 });
 
-                candidates_users.push(users[i].user_id.toString());
+                candidates_users.push(
+                    socket_id_to_mongo_id[users[i].user_id].toString()
+                );
             }
 
             help.candidates = candidates_users;
