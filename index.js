@@ -139,10 +139,12 @@ io.on("connection", (socket) => {
         if (users.length === 1) {
             io.to(socket.id).emit("request_response", "no users nearby");
         } else {
-            let help = await Help.save({
+            let help = Help({
                 user: socket_id_to_mongo_id[socket.id],
                 ...help_info,
             });
+
+            await help.save();
 
             for (let i = 0; i < Math.min(6, users.length); i++) {
                 io.to(users[i].user_id).emit("requesting_help", {
