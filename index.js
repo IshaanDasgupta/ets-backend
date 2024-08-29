@@ -90,6 +90,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("request_nearby_users", async (help_info) => {
+        console.log("------------------request_nearby_users----------------");
         const users = [];
         Object.keys(user_locations).forEach((user_id) => {
             let dist = 0;
@@ -141,11 +142,11 @@ io.on("connection", (socket) => {
             io.to(socket.id).emit("request_response", "no users nearby");
         } else {
             console.log("help data :", {
-                user: socket_id_to_mongo_id[socket.id],
+                user: socket_id_to_mongo_id[socket.id].toString(),
                 ...help_info,
             });
             let help = Help({
-                user: socket_id_to_mongo_id[socket.id],
+                user: socket_id_to_mongo_id[socket.id].toString(),
                 ...help_info,
             });
 
@@ -158,10 +159,11 @@ io.on("connection", (socket) => {
                     sender: socket.id,
                 });
 
-                candidates_users.push(users[i].user_id);
+                candidates_users.push(users[i].user_id.toString());
             }
 
             help.candidates = candidates_users;
+            console.log("new help : ", help);
             await help.save();
 
             io.to(socket.id).emit(
@@ -172,8 +174,11 @@ io.on("connection", (socket) => {
     });
 
     socket.on("help_accepted", async (help_info) => {
+        console.log("------------------help accepted----------------");
+        console.log("help info", help_info);
         const help = await Help.findById(help_info.help._id).populate("user");
 
+        console.log(help);
         if (help.helper) {
             socket
                 .to(socket.id)
@@ -186,7 +191,7 @@ io.on("connection", (socket) => {
         }
 
         const helper = await User.findById(socket_id_to_mongo_id(socket.id));
-
+        console.log("helper : ", helper);
         socket.to(help_info.sender).emit("help_accepted", {
             helper: helper,
             latitude: user_locations[socket.id].latitude,
