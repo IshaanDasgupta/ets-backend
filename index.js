@@ -71,6 +71,7 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         delete user_locations[socket.id];
+        delete mongo_id_to_socket_id[socket_id_to_mongo_id[socket.id]];
         delete socket_id_to_mongo_id[socket.id];
         console.log(`disconnect: ${socket.id}`);
     });
@@ -83,6 +84,7 @@ io.on("connection", (socket) => {
 
     socket.on("register", (mongo_id) => {
         socket_id_to_mongo_id[socket.id] = mongo_id;
+        mongo_id_to_socket_id[mongo_id] = socket.id;
         console.log("registerd users : ", socket_id_to_mongo_id);
     });
 
@@ -143,7 +145,7 @@ io.on("connection", (socket) => {
         const candidates_users = [];
 
         if (users.length === 1) {
-            io.to(socket.id).emit("request_response", {
+            io.to(socket.id).emit("help_request_response", {
                 success: false,
                 message: "no users nearby",
             });
@@ -165,7 +167,7 @@ io.on("connection", (socket) => {
             await help.save();
 
             for (let i = 0; i < Math.min(6, users.length); i++) {
-                io.to(users[i].user_id).emit("requesting_help", { ...help });
+                io.to(users[i].user_id).emit("help_request", { ...help });
 
                 candidates_users.push(
                     socket_id_to_mongo_id[users[i].user_id].toString()
@@ -176,7 +178,7 @@ io.on("connection", (socket) => {
             console.log("new help : ", help, "\n\n");
             await help.save();
 
-            io.to(socket.id).emit("request_response", {
+            io.to(socket.id).emit("help_request_response", {
                 success: true,
                 message: "request sent to nearby users",
             });
@@ -200,12 +202,10 @@ io.on("connection", (socket) => {
 
         console.log("result : ", res, "\n\n");
 
-        socket
-            .to(socket.id)
-            .emit("help_accept_response", {
-                status: res.status,
-                message: res.message,
-            });
+        socket.to(socket.id).emit("help_accept_response", {
+            status: res.status,
+            message: res.message,
+        });
 
         if (res.status === "failed") {
             return;
