@@ -7,6 +7,7 @@ const { Help } = require("./models/Help");
 const { User } = require("./models/User");
 const userRouter = require("./routes/user");
 const helpRouter = require("./routes/help");
+const { reject_help, accept_help } = require("./controllers/help");
 
 const app = express();
 dotenv.config();
@@ -54,6 +55,7 @@ const io = require("socket.io")(server, {
 
 let user_locations = {};
 const socket_id_to_mongo_id = {};
+const mongo_id_to_socket_id = {};
 
 io.on("connection", (socket) => {
     console.log(`connect: ${socket.id}`);
@@ -73,11 +75,11 @@ io.on("connection", (socket) => {
         console.log(`disconnect: ${socket.id}`);
     });
 
-    socket.on("force_disconnect", (socketID) => {
-        delete user_locations[socket.id];
-        delete socket_id_to_mongo_id[socket.id];
-        socket.disconnect();
-    });
+    // socket.on("force_disconnect", (socketID) => {
+    //     delete user_locations[socket.id];
+    //     delete socket_id_to_mongo_id[socket.id];
+    //     socket.disconnect();
+    // });
 
     socket.on("register", (mongo_id) => {
         socket_id_to_mongo_id[socket.id] = mongo_id;
@@ -90,7 +92,9 @@ io.on("connection", (socket) => {
     });
 
     socket.on("request_nearby_users", async (help_info) => {
-        console.log("------------------request_nearby_users----------------");
+        console.log(
+            "------------------request_nearby_users----------------\n\n"
+        );
         const users = [];
         Object.keys(user_locations).forEach((user_id) => {
             let dist = 0;
@@ -135,16 +139,24 @@ io.on("connection", (socket) => {
             return -1;
         });
 
-        console.log(users.length);
+        console.log(users, "\n\n");
         const candidates_users = [];
 
         if (users.length === 1) {
-            io.to(socket.id).emit("request_response", "no users nearby");
-        } else {
-            console.log("help data :", {
-                user: socket_id_to_mongo_id[socket.id].toString(),
-                ...help_info,
+            io.to(socket.id).emit("request_response", {
+                success: false,
+                message: "no users nearby",
             });
+        } else {
+            console.log(
+                "help data :",
+                {
+                    user: socket_id_to_mongo_id[socket.id].toString(),
+                    ...help_info,
+                },
+                "\n\n"
+            );
+
             let help = Help({
                 user: socket_id_to_mongo_id[socket.id].toString(),
                 ...help_info,
@@ -153,11 +165,7 @@ io.on("connection", (socket) => {
             await help.save();
 
             for (let i = 0; i < Math.min(6, users.length); i++) {
-                io.to(users[i].user_id).emit("requesting_help", {
-                    help: help,
-                    dist: users[i].dist,
-                    sender: socket.id,
-                });
+                io.to(users[i].user_id).emit("requesting_help", { ...help });
 
                 candidates_users.push(
                     socket_id_to_mongo_id[users[i].user_id].toString()
@@ -165,46 +173,95 @@ io.on("connection", (socket) => {
             }
 
             help.candidates = candidates_users;
-            console.log("new help : ", help);
+            console.log("new help : ", help, "\n\n");
             await help.save();
 
-            io.to(socket.id).emit(
-                "request_response",
-                "request sent to nearby users"
-            );
+            io.to(socket.id).emit("request_response", {
+                success: true,
+                message: "request sent to nearby users",
+            });
         }
     });
 
-    socket.on("help_accepted", async (help_info) => {
-        console.log("------------------help accepted----------------");
-        console.log("help info", help_info);
-        const help = await Help.findById(help_info.help._id).populate("user");
+    socket.on("help_accepted", async (help_id) => {
+        console.log("------------------help accepted----------------\n\n");
+        console.log(
+            "accepting help ",
+            help_id,
+            " by ",
+            socket_id_to_mongo_id[socket.id],
+            "\n\n"
+        );
 
-        console.log(help);
-        if (help.helper) {
-            socket
-                .to(socket.id)
-                .emit(
-                    "help_accepted_failed",
-                    "the user has already been assgined a helper"
-                );
+        const res = await accept_help(
+            help_id,
+            socket_id_to_mongo_id[socket.id]
+        );
 
+        console.log("result : ", res, "\n\n");
+
+        socket
+            .to(socket.id)
+            .emit("help_accept_response", {
+                status: res.status,
+                message: res.message,
+            });
+
+        if (res.status === "failed") {
             return;
         }
 
-        const helper = await User.findById(socket_id_to_mongo_id(socket.id));
-        console.log("helper : ", helper);
-        socket.to(help_info.sender).emit("help_accepted", {
-            helper: helper,
-            latitude: user_locations[socket.id].latitude,
-            longitude: user_locations[socket.id].longitude,
-        });
+        socket.to(mongo_id_to_socket_id[res.user_id]).emit("help_accepted");
 
-        socket.to(socket.id).emit("help_accepted_succesfully", {
-            help: help,
-        });
+        // const helper = await User.findById(socket_id_to_mongo_id(socket.id));
+        // console.log("helper : ", helper);
+        // socket.to(help_info.sender).emit("help_accepted", {
+        //     helper: helper,
+        //     latitude: user_locations[socket.id].latitude,
+        //     longitude: user_locations[socket.id].longitude,
+        // });
 
-        help.helper = socket_id_to_mongo_id(socket.id);
-        await help.save();
+        // socket.to(socket.id).emit("help_accepted_succesfully", {
+        //     help: help,
+        // });
+
+        // help.helper = socket_id_to_mongo_id(socket.id);
+        // await help.save();
+    });
+
+    socket.on("reject_help", async (help_id) => {
+        console.log("------------------help reject----------------\n\n");
+        console.log(
+            "rejecting ",
+            help_id,
+            " from ",
+            socket_id_to_mongo_id[socket.id],
+            "\n\n"
+        );
+
+        const res = await reject_help(
+            help_id,
+            socket_id_to_mongo_id[socket.id]
+        );
+
+        console.log("result : ", res, "\n\n");
+        console.log(
+            "user mongo id of help ",
+            mongo_id_to_socket_id[res.user_id],
+            "\n\n"
+        );
+
+        if (res.help_request_failed) {
+            socket
+                .to(mongo_id_to_socket_id[res.user_id])
+                .emit("help_request_failed", {
+                    message: "no users accepted your help request",
+                });
+        }
+
+        socket.to(socket.id).emit("reject_help_response", {
+            status: res.status,
+            message: res.message,
+        });
     });
 });
