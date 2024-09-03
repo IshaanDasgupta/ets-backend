@@ -16,6 +16,18 @@ const get_related_help_requests = async (req, res, next) => {
     }
 };
 
+const get_accepted_help = async (req, res, next) => {
+    try {
+        const help = await Help.findById(req.body.help_id)
+            .populate("user")
+            .populate("helper");
+
+        res.status(200).json(help);
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
 const reject_help = async (help_id, given_user_id) => {
     try {
         const help = await Help.findById(help_id);
@@ -137,6 +149,7 @@ const complete_help = async (help_id) => {
 
 module.exports = {
     get_related_help_requests,
+    get_accepted_help,
     reject_help,
     accept_help,
     complete_help,
