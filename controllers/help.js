@@ -19,7 +19,7 @@ const get_related_help_requests = async (req, res, next) => {
 
 const get_accepted_help = async (req, res, next) => {
     try {
-        const help = await Help.findById(req.body.help_id)
+        const help = await Help.findById(req.query.help_id)
             .populate("user")
             .populate("helper");
 
