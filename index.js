@@ -160,12 +160,16 @@ io.on("connection", (socket) => {
                 ...help_info,
             });
 
-            await help.save();
+            const populated_help = await help
+                .save()
+                .then((saved_help) => saved_help.populate("user"));
 
-            console.log("help sent to client : ", { ...help._doc });
+            console.log("help sent to client : ", { ...populated_help });
 
             for (let i = 1; i < Math.min(6, users.length); i++) {
-                io.to(users[i].user_id).emit("help_request", { ...help._doc });
+                io.to(users[i].user_id).emit("help_request", {
+                    ...populated_help._doc,
+                });
 
                 candidates_users.push(
                     socket_id_to_mongo_id[users[i].user_id].toString()
