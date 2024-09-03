@@ -60,20 +60,13 @@ const mongo_id_to_socket_id = {};
 io.on("connection", (socket) => {
     console.log(`connect: ${socket.id}`);
 
-    socket.on("send_message", (message) => {
-        io.broadcast.emit("recieved_message", {
-            chatID: message.chatID,
-            senderID: message.senderID,
-            text: message.text,
-            createdAt: message.createdAt,
-        });
-    });
-
     socket.on("disconnect", () => {
         delete user_locations[socket.id];
         delete mongo_id_to_socket_id[socket_id_to_mongo_id[socket.id]];
         delete socket_id_to_mongo_id[socket.id];
         console.log(`disconnect: ${socket.id}`);
+        console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
+        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
     });
 
     // socket.on("force_disconnect", (socketID) => {
@@ -85,7 +78,8 @@ io.on("connection", (socket) => {
     socket.on("register", (mongo_id) => {
         socket_id_to_mongo_id[socket.id] = mongo_id;
         mongo_id_to_socket_id[mongo_id] = socket.id;
-        console.log("registerd users : ", socket_id_to_mongo_id);
+        console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
+        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
     });
 
     socket.on("update_location", (location_info) => {
@@ -97,6 +91,8 @@ io.on("connection", (socket) => {
         console.log(
             "------------------request_nearby_users----------------\n\n"
         );
+        console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
+        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
         const users = [];
         Object.keys(user_locations).forEach((user_id) => {
             let dist = 0;
@@ -229,9 +225,11 @@ io.on("connection", (socket) => {
         // await help.save();
     });
 
-    socket.on("reject_help", async (help_id) => {
+    socket.on("help_reject", async (help_id) => {
         console.log("------------------help reject----------------\n\n");
-        console.log(socket_id_to_mongo_id, "\n\n");
+        console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
+        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
+
         console.log(
             "rejecting ",
             help_id,
@@ -262,7 +260,7 @@ io.on("connection", (socket) => {
                 });
         }
 
-        socket.to(socket.id).emit("reject_help_response", {
+        socket.to(socket.id).emit("help_reject_response", {
             status: res.status,
             message: res.message,
         });
