@@ -162,8 +162,10 @@ io.on("connection", (socket) => {
 
             await help.save();
 
+            console.log("help sent to client : ", { ...help._doc });
+
             for (let i = 1; i < Math.min(6, users.length); i++) {
-                io.to(users[i].user_id).emit("help_request", { ...help });
+                io.to(users[i].user_id).emit("help_request", { ...help._doc });
 
                 candidates_users.push(
                     socket_id_to_mongo_id[users[i].user_id].toString()
