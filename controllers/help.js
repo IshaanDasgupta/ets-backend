@@ -23,7 +23,8 @@ const get_accepted_help = async (req, res, next) => {
             .populate("user")
             .populate("helper");
 
-        const result = { ...help._doc };
+        console.log("help is : ", { ...help }, "\n\n");
+        const result = { ...help };
         result.user = {
             ...result.user,
             ...user_locations[mongo_id_to_socket_id[result.user._id]],
