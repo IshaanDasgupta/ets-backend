@@ -25,14 +25,34 @@ const get_accepted_help = async (req, res, next) => {
 
         console.log("help is : ", { ...help._doc }, "\n\n");
         const result = { ...help._doc };
+
+        console.log("result user : ", { ...result.user }, "\n\n");
+        console.log(
+            "socket id is : ",
+            mongo_id_to_socket_id[result.user._id.toString()]
+        );
+        console.log(
+            "user location : ",
+            {
+                ...user_locations[
+                    mongo_id_to_socket_id[result.user._id.toString()]
+                ],
+            },
+            "\n\n"
+        );
+
         result.user = {
             ...result.user,
-            ...user_locations[mongo_id_to_socket_id[result.user._id]],
+            ...user_locations[
+                mongo_id_to_socket_id[result.user._id.toString()]
+            ],
         };
 
         result.helper = {
             ...result.helper,
-            ...user_locations[mongo_id_to_socket_id[result.helper._id]],
+            ...user_locations[
+                mongo_id_to_socket_id[result.helper._id.toString()]
+            ],
         };
 
         res.status(200).json(result);
