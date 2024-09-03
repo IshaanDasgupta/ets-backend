@@ -183,6 +183,7 @@ io.on("connection", (socket) => {
             io.to(socket.id).emit("help_request_response", {
                 success: true,
                 message: "request sent to nearby users",
+                help_id: help._id,
             });
         }
     });
