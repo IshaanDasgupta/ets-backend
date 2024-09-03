@@ -27,10 +27,12 @@ const get_accepted_help = async (req, res, next) => {
         const result = { ...help._doc };
 
         console.log("result user : ", { ...result.user }, "\n\n");
+        console.log("mongo id to socket id", mongo_id_to_socket_id, "\n\n");
         console.log(
             "socket id is : ",
             mongo_id_to_socket_id[result.user._id.toString()]
-        );
+        ),
+            "\n\n";
         console.log(
             "user location : ",
             {
@@ -42,14 +44,14 @@ const get_accepted_help = async (req, res, next) => {
         );
 
         result.user = {
-            ...result.user,
+            ...result.user._doc,
             ...user_locations[
                 mongo_id_to_socket_id[result.user._id.toString()]
             ],
         };
 
         result.helper = {
-            ...result.helper,
+            ...result.helper._doc,
             ...user_locations[
                 mongo_id_to_socket_id[result.helper._id.toString()]
             ],
