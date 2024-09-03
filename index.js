@@ -166,7 +166,7 @@ io.on("connection", (socket) => {
 
             await help.save();
 
-            for (let i = 0; i < Math.min(6, users.length); i++) {
+            for (let i = 1; i < Math.min(6, users.length); i++) {
                 io.to(users[i].user_id).emit("help_request", { ...help });
 
                 candidates_users.push(
@@ -231,11 +231,14 @@ io.on("connection", (socket) => {
 
     socket.on("reject_help", async (help_id) => {
         console.log("------------------help reject----------------\n\n");
+        console.log(socket_id_to_mongo_id, "\n\n");
         console.log(
             "rejecting ",
             help_id,
             " from ",
             socket_id_to_mongo_id[socket.id],
+            " with socket id ",
+            socket.id,
             "\n\n"
         );
 

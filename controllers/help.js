@@ -27,9 +27,10 @@ const reject_help = async (help_id, given_user_id) => {
             };
         }
 
-        help.candidates = help.candidates.filter(
-            (user_id) => user_id.toString() !== given_user_id
-        );
+        help.candidates = help.candidates.filter((user_id) => {
+            console.log(user_id.toString(), given_user_id);
+            return user_id.toString() !== given_user_id;
+        });
 
         await help.save();
 
