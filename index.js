@@ -131,10 +131,10 @@ io.on("connection", (socket) => {
             }
 
             if (a.dist < b.dist) {
-                return 1;
+                return -1;
             }
 
-            return -1;
+            return 1;
         });
 
         console.log(users, "\n\n");
@@ -247,7 +247,7 @@ io.on("connection", (socket) => {
 
         console.log("result : ", res, "\n\n");
         console.log(
-            "user mongo id of help ",
+            "user socket id of help ",
             mongo_id_to_socket_id[res.user_id],
             "\n\n"
         );
