@@ -272,3 +272,5 @@ io.on("connection", (socket) => {
         });
     });
 });
+
+module.exports = { user_locations, mongo_id_to_socket_id };

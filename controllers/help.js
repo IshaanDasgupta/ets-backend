@@ -1,4 +1,5 @@
 const { WAITING, ACCEPTED, COMPLETED } = require("../constants.js");
+const { user_locations, mongo_id_to_socket_id } = require("../index.js");
 const { Help } = require("../models/Help.js");
 const { create_error } = require("../utils/error.js");
 
@@ -22,7 +23,18 @@ const get_accepted_help = async (req, res, next) => {
             .populate("user")
             .populate("helper");
 
-        res.status(200).json(help);
+        const result = { ...help._doc };
+        result.user = {
+            ...result.user,
+            ...user_locations[mongo_id_to_socket_id[result.user._id]],
+        };
+
+        result.helper = {
+            ...result.helper,
+            ...user_locations[mongo_id_to_socket_id[result.helper._id]],
+        };
+
+        res.status(200).json(result);
     } catch (err) {
         console.log(err);
         next(err);
