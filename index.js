@@ -204,7 +204,7 @@ io.on("connection", (socket) => {
 
         console.log("result : ", res, "\n\n");
 
-        socket.to(socket.id).emit("help_accept_response", {
+        io.to(socket.id).emit("help_accept_response", {
             status: res.status,
             message: res.message,
         });
@@ -213,17 +213,17 @@ io.on("connection", (socket) => {
             return;
         }
 
-        socket.to(mongo_id_to_socket_id[res.user_id]).emit("help_accepted");
+        io.to(mongo_id_to_socket_id[res.user_id]).emit("help_accepted");
 
         // const helper = await User.findById(socket_id_to_mongo_id(socket.id));
         // console.log("helper : ", helper);
-        // socket.to(help_info.sender).emit("help_accepted", {
+        // io.to(help_info.sender).emit("help_accepted", {
         //     helper: helper,
         //     latitude: user_locations[socket.id].latitude,
         //     longitude: user_locations[socket.id].longitude,
         // });
 
-        // socket.to(socket.id).emit("help_accepted_succesfully", {
+        // socioket.to(socket.id).emit("help_accepted_succesfully", {
         //     help: help,
         // });
 
@@ -266,7 +266,7 @@ io.on("connection", (socket) => {
                 });
         }
 
-        socket.to(socket.id).emit("help_reject_response", {
+        io.to(socket.id).emit("help_reject_response", {
             status: res.status,
             message: res.message,
         });
