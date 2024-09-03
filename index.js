@@ -87,6 +87,13 @@ io.on("connection", (socket) => {
         console.log(user_locations);
     });
 
+    socket.on("get_user_location", (user_mongo_id) => {
+        io.to(socket.id).emit(
+            "location_response",
+            user_locations[mongo_id_to_socket_id[user_mongo_id]]
+        );
+    });
+
     socket.on("request_nearby_users", async (help_info) => {
         console.log(
             "------------------request_nearby_users----------------\n\n"
