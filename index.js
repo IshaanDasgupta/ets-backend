@@ -78,6 +78,7 @@ io.on("connection", (socket) => {
     // });
 
     socket.on("register", (mongo_id) => {
+        consolo.log("register : ", mongo_id, "\n", socket.id, "\n\n");
         socket_id_to_mongo_id[socket.id] = mongo_id;
         mongo_id_to_socket_id[mongo_id] = socket.id;
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
@@ -86,7 +87,7 @@ io.on("connection", (socket) => {
 
     socket.on("update_location", (location_info) => {
         user_locations[socket.id] = location_info;
-        console.log(user_locations);
+        console.log("update_location : ", user_locations, "\n\n");
     });
 
     socket.on("get_user_location", (user_mongo_id) => {
@@ -282,5 +283,3 @@ io.on("connection", (socket) => {
         });
     });
 });
-
-module.exports = { user_locations, mongo_id_to_socket_id };

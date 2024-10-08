@@ -1,5 +1,4 @@
 const { WAITING, ACCEPTED, COMPLETED } = require("../constants.js");
-const { user_locations, mongo_id_to_socket_id } = require("../index.js");
 const { Help } = require("../models/Help.js");
 const { create_error } = require("../utils/error.js");
 
