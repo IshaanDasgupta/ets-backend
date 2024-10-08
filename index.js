@@ -78,7 +78,7 @@ io.on("connection", (socket) => {
     // });
 
     socket.on("register", (mongo_id) => {
-        consolo.log("register : ", mongo_id, "\n", socket.id, "\n\n");
+        console.log("register : ", mongo_id, "\n", socket.id, "\n\n");
         socket_id_to_mongo_id[socket.id] = mongo_id;
         mongo_id_to_socket_id[mongo_id] = socket.id;
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
