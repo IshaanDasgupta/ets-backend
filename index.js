@@ -63,6 +63,7 @@ io.on("connection", (socket) => {
     console.log(`connect: ${socket.id}`);
 
     socket.on("disconnect", () => {
+        console.log("------------------disconnect----------------\n\n");
         delete user_locations[socket.id];
         delete mongo_id_to_socket_id[socket_id_to_mongo_id[socket.id]];
         delete socket_id_to_mongo_id[socket.id];
@@ -78,7 +79,14 @@ io.on("connection", (socket) => {
     // });
 
     socket.on("register", (mongo_id) => {
-        console.log("register : ", mongo_id, "\n", socket.id, "\n\n");
+        console.log("------------------register----------------\n\n");
+        console.log(
+            "mongoID and socketId are : ",
+            mongo_id,
+            "\n",
+            socket.id,
+            "\n\n"
+        );
         socket_id_to_mongo_id[socket.id] = mongo_id;
         mongo_id_to_socket_id[mongo_id] = socket.id;
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
@@ -86,11 +94,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("update_location", (location_info) => {
+        console.log("------------------update_location----------------\n\n");
+
         user_locations[socket.id] = location_info;
         console.log("update_location : ", user_locations, "\n\n");
     });
 
     socket.on("get_user_location", (user_mongo_id) => {
+        console.log("------------------get_user_location----------------\n\n");
+
         io.to(socket.id).emit(
             "location_response",
             user_locations[mongo_id_to_socket_id[user_mongo_id]]

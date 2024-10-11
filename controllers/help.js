@@ -2,6 +2,17 @@ const { WAITING, ACCEPTED, COMPLETED } = require("../constants.js");
 const { Help } = require("../models/Help.js");
 const { create_error } = require("../utils/error.js");
 
+const create_help = async (req, res, next) => {
+    try {
+        const help = new Help(req.body);
+        await help.save();
+
+        res.status(200).json(help);
+    } catch (err) {
+        next(err);
+    }
+};
+
 const get_related_help_requests = async (req, res, next) => {
     try {
         const helps = await Help.find({
@@ -147,16 +158,50 @@ const complete_help = async (help_id) => {
     }
 };
 
-const get_user_history = async(req, res, next) => {
+const get_user_history = async (req, res, next) => {
     try {
-        const {user_id} = req.body();
-        const requests = Help.find({user: user_id});
-        const services = Help.find({helper: user_id});
-        res.status(200).json({requests, services});
-    } catch (error) {
-        
+        const { user_id } = req.body();
+
+        const requests = await Help.find({
+            user: user_id,
+            status: COMPLETED,
+        }).populate("helper");
+
+        const services = await Help.find({
+            helper: user_id,
+            status: COMPLETED,
+        }).populate("user");
+
+        const history_data = [];
+        requests.forEach((request) => {
+            data.push({
+                user: request.helper,
+                hospital: request.hospital_name,
+                issue: request.issue,
+                urgency: request.urgency,
+                tip: request.tip,
+                date: request.date,
+                role: "user",
+            });
+        });
+
+        services.forEach((request) => {
+            data.push({
+                user: request.user,
+                hospital: request.hospital_name,
+                issue: request.issue,
+                urgency: request.urgency,
+                tip: request.tip,
+                date: request.date,
+                role: "rescuser",
+            });
+        });
+
+        res.status(200).json(history_data);
+    } catch (err) {
+        next(err);
     }
-}
+};
 
 module.exports = {
     get_related_help_requests,
@@ -164,5 +209,6 @@ module.exports = {
     reject_help,
     accept_help,
     complete_help,
-    get_user_history
+    get_user_history,
+    create_help,
 };

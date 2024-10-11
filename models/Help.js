@@ -11,6 +11,7 @@ const help_schema = new mongoose.Schema({
     issue: { type: String, required: true },
     urgency: { type: Number, required: true },
     tip: { type: Number },
+    date: { type: String },
     status: {
         type: String,
         enum: [WAITING, ACCEPTED, COMPLETED],
