@@ -147,10 +147,22 @@ const complete_help = async (help_id) => {
     }
 };
 
+const get_user_history = async(req, res, next) => {
+    try {
+        const {user_id} = req.body();
+        const requests = Help.find({user: user_id});
+        const services = Help.find({helper: user_id});
+        res.status(200).json({requests, services});
+    } catch (error) {
+        
+    }
+}
+
 module.exports = {
     get_related_help_requests,
     get_accepted_help,
     reject_help,
     accept_help,
     complete_help,
+    get_user_history
 };
