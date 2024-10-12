@@ -193,7 +193,7 @@ const get_user_history = async (req, res, next) => {
                 urgency: request.urgency,
                 tip: request.tip,
                 date: request.date,
-                role: "rescuser",
+                role: "rescuer",
             });
         });
 
