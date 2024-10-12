@@ -160,7 +160,7 @@ const complete_help = async (help_id) => {
 
 const get_user_history = async (req, res, next) => {
     try {
-        const { user_id } = req.body;
+        const user_id = req.query.user_id;
 
         const requests = await Help.find({
             user: user_id,
@@ -174,7 +174,7 @@ const get_user_history = async (req, res, next) => {
 
         const history_data = [];
         requests.forEach((request) => {
-            data.push({
+            history_data.push({
                 user: request.helper,
                 hospital: request.hospital_name,
                 issue: request.issue,
@@ -186,7 +186,7 @@ const get_user_history = async (req, res, next) => {
         });
 
         services.forEach((request) => {
-            data.push({
+            history_data.push({
                 user: request.user,
                 hospital: request.hospital_name,
                 issue: request.issue,
