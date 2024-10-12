@@ -87,6 +87,12 @@ io.on("connection", (socket) => {
             socket.id,
             "\n\n"
         );
+
+        //removing dup entry if the user was already registered
+        if (mongo_id_to_socket_id[mongo_id]) {
+            delete socket_id_to_mongo_id[mongo_id_to_socket_id[mongo_id]];
+        }
+
         socket_id_to_mongo_id[socket.id] = mongo_id;
         mongo_id_to_socket_id[mongo_id] = socket.id;
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
@@ -114,7 +120,9 @@ io.on("connection", (socket) => {
             "------------------request_nearby_users----------------\n\n"
         );
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
-        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
+        console.log("mongo to socket ", mongo_id_to_socket_id, "\n\n");
+        console.log("user  locations ", user_locations, "\n\n");
+
         const users = [];
         Object.keys(user_locations).forEach((user_id) => {
             let dist = 0;
