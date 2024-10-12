@@ -48,7 +48,6 @@ const server = app.listen(port, () => {
 });
 
 //socket logics
-
 const io = require("socket.io")(server, {
     cors: {
         origin: "*",
@@ -69,14 +68,19 @@ io.on("connection", (socket) => {
         delete socket_id_to_mongo_id[socket.id];
         console.log(`disconnect: ${socket.id}`);
         console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
-        console.log(" mongo to socket ", mongo_id_to_socket_id, "\n\n");
+        console.log("mongo to socket ", mongo_id_to_socket_id, "\n\n");
     });
 
-    // socket.on("force_disconnect", (socketID) => {
-    //     delete user_locations[socket.id];
-    //     delete socket_id_to_mongo_id[socket.id];
-    //     socket.disconnect();
-    // });
+    socket.on("force_disconnect", (socket_id) => {
+        console.log("------------------force disconnect----------------\n\n");
+        delete user_locations[socket.id];
+        delete mongo_id_to_socket_id[socket_id_to_mongo_id[socket.id]];
+        delete socket_id_to_mongo_id[socket.id];
+        console.log(`disconnect: ${socket.id}`);
+        console.log("socket to mongo ", socket_id_to_mongo_id, "\n\n");
+        console.log("mongo to socket ", mongo_id_to_socket_id, "\n\n");
+        socket.disconnect();
+    });
 
     socket.on("register", (mongo_id) => {
         console.log("------------------register----------------\n\n");
@@ -91,6 +95,13 @@ io.on("connection", (socket) => {
         //removing dup entry if the user was already registered
         if (mongo_id_to_socket_id[mongo_id]) {
             delete socket_id_to_mongo_id[mongo_id_to_socket_id[mongo_id]];
+
+            console.log("force disconneting");
+            if (io.sockets.connected[mongo_id_to_socket_id[mongo_id]]) {
+                io.sockets.connected[
+                    mongo_id_to_socket_id[mongo_id]
+                ].disconnect();
+            }
         }
 
         socket_id_to_mongo_id[socket.id] = mongo_id;
@@ -100,15 +111,10 @@ io.on("connection", (socket) => {
     });
 
     socket.on("update_location", (location_info) => {
-        console.log("------------------update_location----------------\n\n");
-
         user_locations[socket.id] = location_info;
-        console.log("update_location : ", user_locations, "\n\n");
     });
 
     socket.on("get_user_location", (user_mongo_id) => {
-        console.log("------------------get_user_location----------------\n\n");
-
         io.to(socket.id).emit(
             "location_response",
             user_locations[mongo_id_to_socket_id[user_mongo_id]]
