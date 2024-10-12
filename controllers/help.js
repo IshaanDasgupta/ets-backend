@@ -160,7 +160,7 @@ const complete_help = async (help_id) => {
 
 const get_user_history = async (req, res, next) => {
     try {
-        const { user_id } = req.body();
+        const { user_id } = req.body;
 
         const requests = await Help.find({
             user: user_id,
