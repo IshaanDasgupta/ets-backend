@@ -161,7 +161,7 @@ export const get_active_help_request = async (req, res, next) => {
             $or: [{ sender: req.user_id }, { responder: req.user_id }],
         }).populate(["sender", "responder"]);
 
-        const data = help_request
+        const data = !help_request
             ? null
             : {
                   id: help_request._id.toString(),
