@@ -161,36 +161,38 @@ export const get_active_help_request = async (req, res, next) => {
             $or: [{ sender: req.user_id }, { responder: req.user_id }],
         }).populate(["sender", "responder"]);
 
-        const public_help_history = {
-            id: help_request._id.toString(),
-            sender: {
-                id: help_request.sender._id.toString(),
-                first_name: help_request.sender.first_name,
-                last_name: help_request.sender.last_name,
-                gender: help_request.sender.gender,
-                blood_type: help_request.sender.blood_type,
-                phone_no: help_request.sender.phone_no,
-            },
-            responder: {
-                id: help_request.responder._id.toString(),
-                first_name: help_request.responder.first_name,
-                last_name: help_request.responder.last_name,
-                gender: help_request.responder.gender,
-                blood_type: help_request.responder.blood_type,
-                phone_no: help_request.responder.phone_no,
-            },
-            latitude: help_request.latitude,
-            longitude: help_request.longitude,
-            hospital_name: help_request.hospital_name,
-            issue: help_request.issue,
-            urgency: help_request.urgency,
-            tip: help_request.tip,
-            created_at: help_request.createdAt,
-        };
+        const data = help_request
+            ? null
+            : {
+                  id: help_request._id.toString(),
+                  sender: {
+                      id: help_request.sender._id.toString(),
+                      first_name: help_request.sender.first_name,
+                      last_name: help_request.sender.last_name,
+                      gender: help_request.sender.gender,
+                      blood_type: help_request.sender.blood_type,
+                      phone_no: help_request.sender.phone_no,
+                  },
+                  responder: {
+                      id: help_request.responder._id.toString(),
+                      first_name: help_request.responder.first_name,
+                      last_name: help_request.responder.last_name,
+                      gender: help_request.responder.gender,
+                      blood_type: help_request.responder.blood_type,
+                      phone_no: help_request.responder.phone_no,
+                  },
+                  latitude: help_request.latitude,
+                  longitude: help_request.longitude,
+                  hospital_name: help_request.hospital_name,
+                  issue: help_request.issue,
+                  urgency: help_request.urgency,
+                  tip: help_request.tip,
+                  created_at: help_request.createdAt,
+              };
 
         res.status(200).json({
             sucess: true,
-            active_help_request: public_help_history,
+            active_help_request: data,
         });
     } catch (err) {
         next(err);
